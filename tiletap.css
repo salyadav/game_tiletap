@@ -115,6 +115,10 @@ button {
 .highlight {
     background-color: #000;
 }
+
+.bomb {
+    background-color: #dc142f;
+}
 /* TODO: reuse button styling by creating a common style.
         remove the blue border surrounding the butotn
  */

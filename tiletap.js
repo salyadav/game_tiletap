@@ -1,4 +1,5 @@
 var HIGHLIGHTED_BOX;
+var BOMBED_BOX;
 var SIZE;
 var SCORE=0;
 var MISSED=0;
@@ -32,10 +33,8 @@ function _constructGrid() {
         grid-template-columns: repeat(${SIZE}, auto);
         grid-template-rows: repeat(${SIZE}, auto);
     `;
-
     gamegrid.setAttribute('style', gridstyle);
 
-    //TODO: add some delay before the game starts - may be a overlay of 3 2 1 count down
     _startCountDownTimer();
 }
 
@@ -43,8 +42,6 @@ function _constructGrid() {
  * 3 sec countdown timer to give player some time before the game starts
  */
 function _startCountDownTimer() {
-    //overlay with text
-    //disable click events in the backgrounds
     _overlayDisplay(false);
     var overlay = document.getElementById('countdownoverlay');
     var count = 3;
@@ -64,28 +61,49 @@ function _startCountDownTimer() {
  * Call highlightgrid function inside interval timer
  */
 function _startGame() {
-    var row, col, count=50; //TODO: temp 50. change to 10 when you add additional timer
+    var tiles=10, level=0;
     SCORE=0; MISSED=0;
     INTERVAL_TIMER = setInterval(()=>{
-        row = _randomIntGenerator(0, SIZE);
-        col = _randomIntGenerator(0, SIZE);
-        HIGHLIGHTED_BOX = row*col;
-        // console.log(HIGHLIGHTED_BOX);
+        
         if(MISSED>3) {
-            //Overlay Display Score
             _gameOver();
             
-        }
-        _highlightGrid();
-        if(--count==0) {
-            clearInterval(INTERVAL_TIMER);
-            _gameOver();
-            //call next timer
+        } else {
+            if(--tiles==0) {
+                tiles=10;
+                level++;
+            }
+            switch (level) {
+                case 0:
+                    _level_0();
+                    break;
+                case 1:
+                    _level_1();
+                    break;
+                case 2:
+                    clearInterval(INTERVAL_TIMER);
+                    _gameOver();
+                    break;
+            }
         }
     }, 1000);
 }
 
+function _level_0() {
+    _highlightGrid();
+}
+
+function _level_1() {
+    _highlightGrid();
+    _bombGrid();
+}
+
 function _highlightGrid() {
+    let row, col;
+    row = _randomIntGenerator(0, SIZE);
+    col = _randomIntGenerator(0, SIZE);
+    HIGHLIGHTED_BOX = row*col;
+
     const boxnum = HIGHLIGHTED_BOX;
     const el_0 = document.getElementsByClassName('highlight');
     el_0.length && el_0[0].classList.remove('highlight');
@@ -94,11 +112,29 @@ function _highlightGrid() {
     el_1.classList.add('highlight');
 }
 
+function _bombGrid() {
+    let row, col;
+    row = _randomIntGenerator(0, SIZE);
+    col = _randomIntGenerator(0, SIZE);
+    BOMBED_BOX = row*col;
+
+    const boxnum = BOMBED_BOX;
+    if (BOMBED_BOX!==HIGHLIGHTED_BOX){
+        const el_0 = document.getElementsByClassName('bomb');
+        el_0.length && el_0[0].classList.remove('bomb');
+        const el_1 = document.getElementsByClassName('gamegrid')[0]
+            .querySelectorAll('div')[boxnum];
+        el_1.classList.add('bomb');
+    }
+}
+
 function _boxClickListener(scope) {
     let clickedbox = +scope.id.split('_')[1];
     //These are the places where an observable can help
     if(clickedbox===HIGHLIGHTED_BOX) {
         document.getElementById('scoreval').innerHTML = ++SCORE;
+    } else if (clickedbox===BOMBED_BOX) {
+        _gameOver();
     } else {
         document.getElementById('missedval').innerHTML = ++MISSED;
         //TODO: increment missed even when NOT clicked. right now only when clicked
@@ -122,16 +158,12 @@ function backtoform() {
     document.getElementById('startgameform').style.display = 'block';
 }
 
-//TODO: complete this function
 /**
  * Restart game. Dont go back to form. Reset score. Reset timer state. 
  * Start game again.
  */
 function restartgame() {
     _resetGameStates();
-    //size remain. 
-    //stay back in the same page.
-    //display overlay for countdown and start game.
     _startCountDownTimer();
 }
 
