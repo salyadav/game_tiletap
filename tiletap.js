@@ -1,8 +1,8 @@
-var HIGHLIGHTED_BOX;
-var BOMBED_BOX;
+var HIGHLIGHTED_BOX, BOMBED_BOX, DANGER_BOX;
 var SIZE;
 var SCORE=0;
 var MISSED=0;
+var LEVEL=0;
 var INTERVAL_TIMER = null;
 /**
  * On click of start game - construct the grid and display a 3 sec count down
@@ -61,7 +61,7 @@ function _startCountDownTimer() {
  * Call highlightgrid function inside interval timer
  */
 function _startGame() {
-    var tiles=10, level=0;
+    var tiles=10;
     SCORE=0; MISSED=0;
     INTERVAL_TIMER = setInterval(()=>{
         
@@ -69,11 +69,11 @@ function _startGame() {
             _gameOver();
             
         } else {
-            if(--tiles==0) {
+            if(tiles--==0) {
                 tiles=10;
-                level++;
+                LEVEL++;
             }
-            switch (level) {
+            switch (LEVEL) {
                 case 0:
                     _level_0();
                     break;
@@ -81,6 +81,9 @@ function _startGame() {
                     _level_1();
                     break;
                 case 2:
+                    _level_2();
+                    break;
+                case 3:
                     clearInterval(INTERVAL_TIMER);
                     _gameOver();
                     break;
@@ -95,7 +98,13 @@ function _level_0() {
 
 function _level_1() {
     _highlightGrid();
+    _dangerGrid();
+}
+
+function _level_2() {
+    _highlightGrid();
     _bombGrid();
+    _dangerGrid();
 }
 
 function _highlightGrid() {
@@ -128,17 +137,39 @@ function _bombGrid() {
     }
 }
 
+function _dangerGrid() {
+    let row, col;
+    row = _randomIntGenerator(0, SIZE);
+    col = _randomIntGenerator(0, SIZE);
+    BOMBED_BOX = row*col;
+
+    const boxnum = BOMBED_BOX;
+    if (BOMBED_BOX!==HIGHLIGHTED_BOX){
+        const el_0 = document.getElementsByClassName('danger');
+        el_0.length && el_0[0].classList.remove('danger');
+        const el_1 = document.getElementsByClassName('gamegrid')[0]
+            .querySelectorAll('div')[boxnum];
+        el_1.classList.add('danger');
+    }
+}
+
 function _boxClickListener(scope) {
     let clickedbox = +scope.id.split('_')[1];
     //These are the places where an observable can help
     if(clickedbox===HIGHLIGHTED_BOX) {
         document.getElementById('scoreval').innerHTML = ++SCORE;
+    } else if (clickedbox===DANGER_BOX) {
+        SCORE-=2;
+        MISSED++;
+        document.getElementById('scoreval').innerHTML = SCORE;
     } else if (clickedbox===BOMBED_BOX) {
         _gameOver();
     } else {
-        document.getElementById('missedval').innerHTML = ++MISSED;
-        //TODO: increment missed even when NOT clicked. right now only when clicked
+        MISSED++;
     }
+    document.getElementById('missedval').innerHTML = MISSED;
+    //TODO: increment missed even when NOT clicked. right now only when clicked
+    
 }
 
 /**
@@ -177,10 +208,18 @@ function _gameOver() {
 
 function _resetGameStates() {
     INTERVAL_TIMER && clearInterval(INTERVAL_TIMER);
-    SCORE = 0;
-    MISSED = 0;
+    SCORE = 0; MISSED = 0; LEVEL = 0;
     document.getElementById('scoreval').innerHTML = 0;
     document.getElementById('missedval').innerHTML = 0;
+
+    let el = document.getElementsByClassName('bomb');
+    el.length && el[0].classList.remove('bomb');
+
+    el = document.getElementsByClassName('danger');
+    el.length && el[0].classList.remove('danger');
+
+    el = document.getElementsByClassName('highlight');
+    el.length && el[0].classList.remove('highlight');
 }
 
 function _overlayDisplay(scorecardflag) {

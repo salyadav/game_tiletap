@@ -119,6 +119,10 @@ button {
 .bomb {
     background-color: #dc142f;
 }
+
+.danger {
+    background-color: #494949;
+}
 /* TODO: reuse button styling by creating a common style.
         remove the blue border surrounding the butotn
  */
