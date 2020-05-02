@@ -1,9 +1,12 @@
+"use strict";
+
 var HIGHLIGHTED_BOX, BOMBED_BOX, DANGER_BOX;
 var SIZE;
 var SCORE=0;
 var MISSED=0;
 var LEVEL=0;
 var INTERVAL_TIMER = null;
+
 /**
  * On click of start game - construct the grid and display a 3 sec count down
  * Reset score to 0
@@ -46,7 +49,7 @@ function _startCountDownTimer() {
     var overlay = document.getElementById('countdownoverlay');
     var count = 3;
     overlay.querySelector('h1').innerHTML = count;
-    countdowntimer = setInterval(()=>{
+    var countdowntimer = setInterval(()=>{
         overlay.querySelector('h1').innerHTML = --count;
     }, 1000);
     setTimeout(()=>{
@@ -92,15 +95,24 @@ function _startGame() {
     }, 1000);
 }
 
+/**
+ * Defining base level of the game. 10 sec
+ */
 function _level_0() {
     _highlightGrid();
 }
 
+/**
+ * Defining level 1 up for the next ten sec
+ */
 function _level_1() {
     _highlightGrid();
     _dangerGrid();
 }
 
+/**
+ * Defining level 2 up for the last 10 sec
+ */
 function _level_2() {
     _highlightGrid();
     _bombGrid();
@@ -141,10 +153,10 @@ function _dangerGrid() {
     let row, col;
     row = _randomIntGenerator(0, SIZE);
     col = _randomIntGenerator(0, SIZE);
-    BOMBED_BOX = row*col;
+    DANGER_BOX = row*col;
 
-    const boxnum = BOMBED_BOX;
-    if (BOMBED_BOX!==HIGHLIGHTED_BOX){
+    const boxnum = DANGER_BOX;
+    if (DANGER_BOX!==HIGHLIGHTED_BOX){
         const el_0 = document.getElementsByClassName('danger');
         el_0.length && el_0[0].classList.remove('danger');
         const el_1 = document.getElementsByClassName('gamegrid')[0]
@@ -201,6 +213,14 @@ function restartgame() {
 function _gameOver() {
     clearInterval(INTERVAL_TIMER);
 
+    //recalculating highscore
+    var prevHighScore = window.localStorage.getItem('tiletaphighscore');
+    if(!prevHighScore) {
+        _setHighScore(SCORE);
+    } else {
+        _setHighScore(SCORE > prevHighScore ? SCORE : prevHighScore);
+    }
+
     _overlayDisplay(true);
     let overlay = document.getElementById('countdownoverlay');
     overlay.querySelector('h2').innerHTML = 'Score: '+SCORE;
@@ -228,6 +248,16 @@ function _overlayDisplay(scorecardflag) {
 
     overlay.querySelector('h1').style.display = scorecardflag ? 'none' : 'block';
     overlay.querySelector('div').style.display = scorecardflag? 'flex' : 'none';
+}
+
+function resetHighScore() {
+    _setHighScore(0);
+}
+
+function _setHighScore(newScore) {
+    window.localStorage.setItem('tiletaphighscore', +newScore);
+    document.getElementById('highScore').innerHTML = newScore;
+    document.getElementById('highscoreval').innerHTML = newScore;
 }
 /**
  * Trying  to write generic fn
