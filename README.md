@@ -1,5 +1,7 @@
 Tile Tap:
 
+Hosted on Netlify: https://tiletap-game-saloni.netlify.app/
+
 Basic Layout: 
 
 -- Select a grid size between 8 to 20.
